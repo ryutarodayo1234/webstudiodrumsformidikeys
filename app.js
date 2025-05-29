@@ -1,143 +1,143 @@
 // --- Global Variables ---
 let audioContext;
 let masterGainNode;
-const loadedSounds = {}; // Stores AudioBuffers, keyed by soundFile path
+const loadedSounds = {}; // Stores AudioBuffers, keyed by the absolute soundFile URL
 const activeSources = {}; // Stores currently playing AudioBufferSourceNodes for choking
 const loadingSpinner = document.getElementById('loading-spinner');
 let midiAccessInstance = null; // Store the MIDI Access object
+const absoluteBaseUrlForSounds = 'https://ryutarodayo1234.github.io/webstudiodrumsformidikeys/sounds/';
 
 // --- Drum Instrument Mapping ---
-// This drumMap is now configured based on your screenshot
-// Each instrument has `velocityLayers` sorted by `maxVelocity`.
+// soundFile paths are now absolute URLs
 const drumMap = {
     48: { name: 'Kick', keyBinding: 'C2', group: 'kick', indicatorStyleClass: 'key-style-kick',
         velocityLayers: [
-            { maxVelocity: 80, soundFile: 'sounds/kick_80.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/kick_120.mp3' }
+            { maxVelocity: 80, soundFile: absoluteBaseUrlForSounds + 'kick_80.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'kick_120.mp3' }
         ]
     },
     49: { name: 'Snare Closed Rim', keyBinding: 'C#2', group: 'snare', indicatorStyleClass: 'key-style-snare',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/snareClosedRim_50.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/snareClosedRim_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'snareClosedRim_50.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'snareClosedRim_120.mp3' }
         ]
     },
     50: { name: 'Snare', keyBinding: 'D2', group: 'snare', indicatorStyleClass: 'key-style-snare',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/snare_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/snare_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/snare_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'snare_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'snare_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'snare_120.mp3' }
         ]
     },
     51: { name: 'Snare Double Stroke', keyBinding: 'D#2', group: 'snare', indicatorStyleClass: 'key-style-snare',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/snareDoubleStroke_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/snareDoubleStroke_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/snareDoubleStroke_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'snareDoubleStroke_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'snareDoubleStroke_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'snareDoubleStroke_120.mp3' }
         ]
     },
     52: { name: 'Snare Rim', keyBinding: 'E2', group: 'snare', indicatorStyleClass: 'key-style-snare',
         velocityLayers: [
-            { maxVelocity: 90, soundFile: 'sounds/snareRim_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/snareRim_120.mp3' }
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'snareRim_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'snareRim_120.mp3' }
         ]
     },
     53: { name: 'Tom Low 2', keyBinding: 'F2', group: 'tomLow2', indicatorStyleClass: 'key-style-tom',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomLow2_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomLow2_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomLow2_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomLow2_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomLow2_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomLow2_120.mp3' }
         ]
     },
     54: { name: 'Closed HH', keyBinding: 'F#2', group: 'hh', indicatorStyleClass: 'key-style-hh',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/closedHH_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/closedHH_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/closedHH_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'closedHH_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'closedHH_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'closedHH_120.mp3' }
         ]
     },
     55: { name: 'Tom Low 1', keyBinding: 'G2', group: 'tomLow1', indicatorStyleClass: 'key-style-tom',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomLow1_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomLow1_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomLow1_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomLow1_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomLow1_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomLow1_120.mp3' }
         ]
     },
     56: { name: 'Closed HH', keyBinding: 'G#2', group: 'hh', indicatorStyleClass: 'key-style-hh', // Shares samples with F#2
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/closedHH_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/closedHH_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/closedHH_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'closedHH_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'closedHH_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'closedHH_120.mp3' }
         ]
     },
     57: { name: 'Tom Low 1', keyBinding: 'A2', group: 'tomLow1', indicatorStyleClass: 'key-style-tom', // Shares samples with G2
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomLow1_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomLow1_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomLow1_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomLow1_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomLow1_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomLow1_120.mp3' }
         ]
     },
     58: { name: 'Open HH', keyBinding: 'A#2', group: 'hh', indicatorStyleClass: 'key-style-hh',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/openHH_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/openHH_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/openHH_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'openHH_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'openHH_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'openHH_120.mp3' }
         ]
     },
     59: { name: 'Tom Mid', keyBinding: 'B2', group: 'tomMid', indicatorStyleClass: 'key-style-tom',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomMid_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomMid_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomMid_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomMid_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomMid_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomMid_120.mp3' }
         ]
     },
     60: { name: 'Tom Mid', keyBinding: 'C3', group: 'tomMid', indicatorStyleClass: 'key-style-tom', // Shares samples with B2
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomMid_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomMid_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomMid_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomMid_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomMid_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomMid_120.mp3' }
         ]
     },
     61: { name: 'Clash Cymbal', keyBinding: 'C#3', group: 'clash', indicatorStyleClass: 'key-style-cymbal',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/clashCymbal_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/clashCymbal_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/clashCymbal_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'clashCymbal_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'clashCymbal_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'clashCymbal_120.mp3' }
         ]
     },
     62: { name: 'Tom High', keyBinding: 'D3', group: 'tomHigh', indicatorStyleClass: 'key-style-tom',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/tomHigh_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/tomHigh_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/tomHigh_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'tomHigh_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'tomHigh_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'tomHigh_120.mp3' }
         ]
     },
     63: { name: 'Ride Bow', keyBinding: 'D#3', group: 'ride', indicatorStyleClass: 'key-style-cymbal',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/rideBow_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/rideBow_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/rideBow_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'rideBow_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'rideBow_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'rideBow_120.mp3' }
         ]
     },
     64: { name: 'Ride Edge', keyBinding: 'E3', group: 'ride', indicatorStyleClass: 'key-style-cymbal',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/rideEdge_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/rideEdge_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/rideEdge_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'rideEdge_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'rideEdge_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'rideEdge_120.mp3' }
         ]
     },
     65: { name: 'Ride Bell', keyBinding: 'F3', group: 'ride', indicatorStyleClass: 'key-style-cymbal',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/rideBell_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/rideBell_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/rideBell_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'rideBell_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'rideBell_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'rideBell_120.mp3' }
         ]
     },
     66: { name: 'Splash Cymbal', keyBinding: 'F#3', group: 'splash', indicatorStyleClass: 'key-style-cymbal',
         velocityLayers: [
-            { maxVelocity: 50, soundFile: 'sounds/cymbalSplash_50.mp3' },
-            { maxVelocity: 90, soundFile: 'sounds/cymbalSplash_90.mp3' },
-            { maxVelocity: 120, soundFile: 'sounds/cymbalSplash_120.mp3' }
+            { maxVelocity: 50, soundFile: absoluteBaseUrlForSounds + 'cymbalSplash_50.mp3' },
+            { maxVelocity: 90, soundFile: absoluteBaseUrlForSounds + 'cymbalSplash_90.mp3' },
+            { maxVelocity: 120, soundFile: absoluteBaseUrlForSounds + 'cymbalSplash_120.mp3' }
         ]
     }
 };
@@ -149,7 +149,7 @@ function initAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         masterGainNode = audioContext.createGain();
-        const masterVolumeSlider = document.querySelector('input[type="range"][oninput^="setMasterVolume"]'); //
+        const masterVolumeSlider = document.querySelector('input[type="range"][oninput^="setMasterVolume"]');
         masterGainNode.gain.value = masterVolumeSlider ? parseFloat(masterVolumeSlider.value) : 0.3;
         masterGainNode.connect(audioContext.destination);
         console.log("AudioContext initialized.");
@@ -159,18 +159,18 @@ function initAudioContext() {
     }
 }
 
-async function fetchAndDecodeAudio(soundFilePath) {
+async function fetchAndDecodeAudio(absoluteSoundFileUrl) {
     try {
-        const response = await fetch(soundFilePath);
+        const response = await fetch(absoluteSoundFileUrl);
         if (!response.ok) {
-            throw new Error(`Sound file not found or error loading: ${soundFilePath} - Status: ${response.statusText}`);
+            throw new Error(`Sound file not found or error loading: ${absoluteSoundFileUrl} - Status: ${response.statusText}`);
         }
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        loadedSounds[soundFilePath] = audioBuffer;
+        loadedSounds[absoluteSoundFileUrl] = audioBuffer; // Use the absolute URL as the key
     } catch (error) {
-        console.error(`Error loading sound ${soundFilePath}:`, error);
-        throw error; 
+        console.error(`Error loading sound ${absoluteSoundFileUrl}:`, error);
+        throw error;
     }
 }
 
@@ -178,35 +178,35 @@ async function loadInstrument() {
     initAudioContext();
     if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-    const soundFilesToLoad = new Set();
+    const soundUrlsToLoad = new Set();
     Object.values(drumMap).forEach(instrument => {
         if (instrument.velocityLayers) {
             instrument.velocityLayers.forEach(layer => {
-                soundFilesToLoad.add(layer.soundFile);
+                soundUrlsToLoad.add(layer.soundFile); // Add the absolute URL
             });
         }
     });
 
     const soundPromises = [];
-    soundFilesToLoad.forEach(filePath => {
-        if (!loadedSounds[filePath]) { // Only load if not already loaded
-            soundPromises.push(fetchAndDecodeAudio(filePath));
+    soundUrlsToLoad.forEach(absoluteUrl => {
+        if (!loadedSounds[absoluteUrl]) { // Check with absolute URL
+            soundPromises.push(fetchAndDecodeAudio(absoluteUrl)); // Pass absolute URL
         }
     });
 
     try {
         await Promise.all(soundPromises);
-        const allRequestedFiles = Array.from(soundFilesToLoad);
-        const successfullyLoadedCount = allRequestedFiles.filter(file => loadedSounds[file]).length;
-        console.log(`${successfullyLoadedCount} of ${allRequestedFiles.length} unique sound files processed.`);
-        
-        if (successfullyLoadedCount < allRequestedFiles.length) {
-            const missingFiles = allRequestedFiles.filter(file => !loadedSounds[file]);
-            console.warn("Some sound files may have failed to load or were already missing:", missingFiles);
-            if (missingFiles.length > 0) {
-                alert(`Warning: ${missingFiles.length} sound file(s) failed to load. Check console for details. Missing examples: ${missingFiles.slice(0,3).join(', ')}`);
+        const allRequestedUrls = Array.from(soundUrlsToLoad); // Array of absolute URLs
+        const successfullyLoadedCount = allRequestedUrls.filter(url => loadedSounds[url]).length;
+        console.log(`${successfullyLoadedCount} of ${allRequestedUrls.length} unique sound files processed.`);
+
+        if (successfullyLoadedCount < allRequestedUrls.length) {
+            const missingUrls = allRequestedUrls.filter(url => !loadedSounds[url]);
+            console.warn("Some sound files may have failed to load or were already missing:", missingUrls);
+            if (missingUrls.length > 0) {
+                alert(`Warning: ${missingUrls.length} sound file(s) failed to load. Check console for details. Missing examples: ${missingUrls.slice(0,3).join(', ')}`);
             }
-        } else if (soundPromises.length > 0) { // Only log "all loaded" if new sounds were attempted
+        } else if (soundPromises.length > 0) {
              console.log("All newly requested sounds loaded successfully!");
         } else {
             console.log("No new sounds to load; all previously requested sounds are present.");
@@ -230,7 +230,7 @@ async function loadInstrument() {
 
 // --- UI Styling for Piano Keys ---
 function dimUnusedPianoKeys() {
-    const pianoKeys = document.querySelectorAll('#pianoroll .roll-key'); //
+    const pianoKeys = document.querySelectorAll('#pianoroll .roll-key');
     pianoKeys.forEach(key => {
         const note = parseInt(key.dataset.note);
         if (!mappedMIDINotes.includes(note)) {
@@ -242,12 +242,12 @@ function dimUnusedPianoKeys() {
 }
 
 function applyKeyColorIndicators() {
-    const pianoKeys = document.querySelectorAll('#pianoroll .roll-key'); //
+    const pianoKeys = document.querySelectorAll('#pianoroll .roll-key');
     pianoKeys.forEach(key => {
         const note = parseInt(key.dataset.note);
         const instrument = drumMap[note];
 
-        Object.values(drumMap).forEach(instr => { 
+        Object.values(drumMap).forEach(instr => {
             if (instr.indicatorStyleClass) key.classList.remove(instr.indicatorStyleClass);
         });
 
@@ -307,13 +307,14 @@ function onMIDIMessage(event) {
         console.warn("AudioContext not ready for MIDI message.");
         return;
     }
-    // Check if any sounds are loaded, more robustly by checking the loadedSounds object.
+    
     let soundsAvailable = false;
-    if (drumMap[event.data[1]] && drumMap[event.data[1]].velocityLayers) {
-        soundsAvailable = drumMap[event.data[1]].velocityLayers.some(layer => loadedSounds[layer.soundFile]);
+    const instrumentForNote = drumMap[event.data[1]];
+    if (instrumentForNote && instrumentForNote.velocityLayers) {
+        soundsAvailable = instrumentForNote.velocityLayers.some(layer => loadedSounds[layer.soundFile]); // Check absolute URL in loadedSounds
     }
-    if (!soundsAvailable && Object.keys(loadedSounds).length === 0) { // Fallback check
-        // console.log("Sounds not loaded yet for MIDI message.");
+
+    if (!soundsAvailable && Object.keys(loadedSounds).length === 0) {
         return;
     }
 
@@ -340,25 +341,24 @@ window.playNote = function(midiNote, velocity) {
     }
     if (audioContext.state === 'suspended') {
         console.warn("AudioContext is suspended. Attempting to resume for playback.");
-        audioContext.resume(); // Try to resume, playback might be delayed or fail if not user-initiated context
+        audioContext.resume();
     }
 
     const instrument = drumMap[midiNote];
     if (instrument && instrument.velocityLayers && instrument.velocityLayers.length > 0) {
         let selectedLayer = null;
-        // Find the correct layer (velocityLayers MUST be sorted by maxVelocity ASC)
         for (const layer of instrument.velocityLayers) {
             if (velocity <= layer.maxVelocity) {
                 selectedLayer = layer;
                 break;
             }
         }
-        if (!selectedLayer) { // Should not happen if last layer has maxVelocity: 120
+        if (!selectedLayer) {
             selectedLayer = instrument.velocityLayers[instrument.velocityLayers.length - 1];
         }
 
-        const soundToPlayPath = selectedLayer.soundFile;
-        const audioBufferForVelocity = loadedSounds[soundToPlayPath];
+        const soundToPlayAbsoluteUrl = selectedLayer.soundFile; // This is the absolute URL
+        const audioBufferForVelocity = loadedSounds[soundToPlayAbsoluteUrl]; // Access with absolute URL
 
         if (audioBufferForVelocity) {
             if (activeSources[instrument.group]) {
@@ -372,15 +372,14 @@ window.playNote = function(midiNote, velocity) {
             source.buffer = audioBufferForVelocity;
 
             const gainNode = audioContext.createGain();
-            // gainNode.gain.value = Math.sqrt(velocity / 127); // より自然な音量変化
-            gainNode.gain.value = Math.sqrt(velocity / 127) * 5; // ゲインをさらに上げる（最大値は1.5倍）
+            gainNode.gain.value = Math.sqrt(velocity / 127) * 5;
 
             source.connect(gainNode);
             gainNode.connect(masterGainNode);
             source.start(0);
             activeSources[instrument.group] = source;
         } else {
-            console.warn(`Sound buffer not found for: ${soundToPlayPath} (MIDI: ${midiNote}, vel: ${velocity}). Ensure it loaded correctly.`);
+            console.warn(`Sound buffer not found for: ${soundToPlayAbsoluteUrl} (MIDI: ${midiNote}, vel: ${velocity}). Ensure it loaded correctly.`);
         }
     } else if (instrument) {
         console.warn(`No velocity layers defined or found for instrument: ${instrument.name} (MIDI: ${midiNote})`);
@@ -388,15 +387,15 @@ window.playNote = function(midiNote, velocity) {
 };
 
 window.stopNote = function(midiNote) {
-    // For pianoroll.js to unhighlight its key
+    // For pianoroll.js to unhighlight its key (or other note off actions)
 };
 
 // --- Master Volume Control ---
-function setMasterVolume(value) { //
+function setMasterVolume(value) {
     if (masterGainNode) {
         masterGainNode.gain.value = parseFloat(value);
     } else if (audioContext) {
-        console.warn("Master gain node not ready, but volume changed.");
+        console.warn("Master gain node not ready, but volume changed. Volume will be applied once ready if initAudioContext is called again or masterGainNode is created.");
     }
 }
 
